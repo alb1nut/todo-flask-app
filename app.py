@@ -1,8 +1,10 @@
-from flask import Flask, render_template
+# from crypt import methods
+
+from flask import Flask, render_template, redirect,url_for,request,jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URL'] = 'postgresql://postgres:123456789@localhost:5432/todoapp'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456789@localhost:5432/todoapp'
 db = SQLAlchemy(app)
 
 class Todo(db.Model):
@@ -14,6 +16,16 @@ class Todo(db.Model):
         return f'<Todo {self.id} {self.description} >'
 
 db.create_all()
+
+@app.route('/todos/create' , methods=['POST'])
+def create_todo():
+    description = request.get_json()['description']
+    todo= Todo(description=description)
+    db.session.add(todo)
+    db.session.commit()
+    return jsonify({
+        'description': todo.description
+    })
 
 @app.route('/')
 def index():
